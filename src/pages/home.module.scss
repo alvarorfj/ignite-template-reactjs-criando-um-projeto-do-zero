@@ -1,1 +1,48 @@
-// TODO
+.contentContainer {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    height: calc(100vh - 5rem);
+    .header {
+        margin: 5rem 0 5rem 0;
+    }
+
+    .post {
+        .title{
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 34px;
+            letter-spacing: -0.5px;
+            text-align: justified;     
+            color: #F8F8F8;       
+        }
+        .description{
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 22px;
+            letter-spacing: 0em;
+            text-align: justified;
+            color: #D7D7D7;
+        }
+        .postInfo{
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            color: #D7D7D7;
+            p {
+                margin-right: 2rem;
+            }
+        }
+    }
+
+    .loadMorePostsButton{
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 22px;
+        letter-spacing: 0em;
+        text-align: justified;
+        color: #FF57B2;
+
+        margin-top: 1rem;
+    }
+}
