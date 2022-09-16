@@ -253,13 +253,14 @@ describe('Post', () => {
     const response = (await getStaticProps(
       getStaticPropsContext
     )) as GetStaticPropsResult;
-
+    console.log("isso e response", response)
     expect(response.props.post).toEqual(expect.objectContaining(postReturn));
   });
 
   it('should be able to render post document info', () => {
     const postProps = mockedGetByUIDReturn;
 
+    console.log("Isso é um teste!", postProps)
     render(<Post post={postProps} />);
 
     screen.getByText('Como utilizar Hooks');

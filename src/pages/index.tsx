@@ -5,6 +5,7 @@ import Head from 'next/head';
 import { getPrismicClient } from '../services/prismic';
 import styles from './home.module.scss';
 import Link from 'next/link'
+import { useState } from "react";
 
 interface Post {
   uid?: string;
@@ -26,11 +27,41 @@ interface HomeProps {
 }
 
 export default function Home({postsPagination}: HomeProps) {
-  
+    const [posts, setPosts] = useState(postsPagination);
+    async function loadPosts(url: string): Promise<void> {
+    const response = await fetch(`${url}`)
+      .then(response => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        throw response;
+      }
+    ).then(data => {
+      console.log(data);
+      var results: Post[] = [];
+      data.results.map(post => {
+        const newPost: Post = {
+          uid: post.uid,
+          first_publication_date: format(new Date(post.first_publication_date.substring(0, 10)), "dd MMM yyyy", {locale: ptBR}),
+          data: {
+            title: post.data.title,
+            subtitle: post.data.subtitle,
+            author: post.data.author,
+          }
+        };
+        results.push(newPost);
+      })
+      const newPostPagination: PostPagination = {
+        next_page: data.next_page,
+        results: results
+      }
+      setPosts(newPostPagination)
+    });
+  }
   return (
     <>
       <Head>
-        <title>Isso é um teste</title>
+        <title>spacetraveling</title>
       </Head>
 
       <main className={styles.contentContainer}>
@@ -39,14 +70,16 @@ export default function Home({postsPagination}: HomeProps) {
         </section>
         <section className={styles.post}>
 
-        { postsPagination.results.map(post => (
-          <Link href={`/posts/preview/${post.uid}`}> 
+        { posts.results.map(post => (
+          <Link href={`/post/${post.uid}`}> 
             <a key={post.uid} >
               <p className={styles.title}>{post.data.title}</p>
               <p className={styles.description}>{post.data.subtitle}</p>
               <div className={styles.postInfo}>
                 <p><FaCalendar size="0.75rem" style={{marginRight: '0.5rem'}}/>
-                  {post.first_publication_date}
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
                 </p>
                 <p><FaUser size="0.75rem" style={{marginRight: '0.5rem'}}/>{post.data.author}</p>
               </div>
@@ -56,7 +89,9 @@ export default function Home({postsPagination}: HomeProps) {
         </section>
 
         <section>
-          <p className={styles.loadMorePostsButton}>Carregar mais posts</p>
+          {posts.next_page !== null ? 
+            <p onClick={() => {loadPosts(posts.next_page)}} className={styles.loadMorePostsButton}>Carregar mais posts</p>
+          : <></> }
         </section>
       </main>
       
@@ -71,14 +106,17 @@ export const getStaticPaths = () => {
   }
 }
 
+
+
 export const getStaticProps = async () => {
   const prismic = getPrismicClient({});
-  const response = await prismic.getByType("blog_post", {pageSize: 1, fetch: ['slug', 'title', 'description', 'author', 'first_publication_date']});
+  var response = await prismic.getByType("blog_post", {pageSize: 1, fetch: ['slug', 'title', 'description', 'author', 'first_publication_date']});
+  console.log(response)
   var results: Post[] = [];
   response.results?.map(post => {
     const newPost: Post = {
       uid: post.uid,
-      first_publication_date: format(new Date(post.first_publication_date.substring(0, 10)), "dd MMM yyyy", {locale: ptBR}),
+      first_publication_date: post.data.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
@@ -87,9 +125,8 @@ export const getStaticProps = async () => {
     };
     results.push(newPost);
   })
-  console.log(results)
   const postsPagination: PostPagination = {
-      next_page: '0',
+      next_page: response.next_page,
       results: results
   }
   return {
